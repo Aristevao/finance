@@ -1,6 +1,5 @@
-const res = require('express/lib/response');
-const BillingCycle = require('./billingCycle');
 const _ = require('lodash');
+const BillingCycle = require('./billingCycle');
 
 /*  "methods" from node-restful
     Create a API rest as pattern to the BillingCycle object */
@@ -21,17 +20,17 @@ BillingCycle.updateOptions({ new: true, runValidators: true });
 /* Treats errors messages */
 BillingCycle.after('post', sendErrorsOrNext).after('put', sendErrorsOrNext);
 
-function sendErrorsOrNext() {
-    const bundle = res.locals.errors;
+function sendErrorsOrNext(req, res, next) {
+    const bundle = res.locals.bundle;
 
     if (bundle.errors) {
-        const errors = parseErrors(bundle.errors);
+        var errors = parseErrors(bundle.errors);
         res.status(500).json({ errors });
     } else {
         next();
     }
 }
- 
+
 function parseErrors(nodeRestfulErrors) {
     const errors = [];
     _.forIn(nodeRestfulErrors, error => errors.push(error.message));
@@ -39,8 +38,8 @@ function parseErrors(nodeRestfulErrors) {
 }
 
 // Serviço Contador (count) de Ciclo de Pagamentos
-BillingCycle.route('count', (req, res, next) => {
-    BillingCycle.count((error, value) => {
+BillingCycle.route('count', function (req, res, next) {
+    BillingCycle.count(function (error, value) {
         if (error) {
             res.status(500).json({ errors: [error] });
         } else {
